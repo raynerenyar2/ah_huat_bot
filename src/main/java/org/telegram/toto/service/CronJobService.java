@@ -1,6 +1,7 @@
 package org.telegram.toto.service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
@@ -36,11 +37,12 @@ public class CronJobService {
         Optional<Draw> opt = webscrapperService.getNextDraw();
         opt.ifPresentOrElse(
                 draw -> {
+                    LocalDateTime sgTimeNow = LocalDateTime.now(ZoneId.of("Singapore"));
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("E,dMMMyyyy,h.mma", Locale.ENGLISH);
-                    logger.info("Draw date time: "+draw.getDatetime().format(formatter) + " - Date time now: "+LocalDateTime.now().format(formatter));
-                    boolean t = LocalDateTime.now().isBefore(draw.getDatetime());
+                    logger.info("Draw date time: "+draw.getDatetime().format(formatter) + " - Date time now: "+ sgTimeNow.format(formatter));
+                    boolean t = sgTimeNow.isBefore(draw.getDatetime());
                     logger.info("LocalDateTime.now().isBefore(draw.getDatetime() ==> " + t);
-                    if (LocalDateTime.now().compareTo(draw.getDatetime()) < 0) {
+                    if (sgTimeNow.isBefore(draw.getDatetime())) {
                         List<String> chatIds = chatRepo.findAllByAlertValueNextDrawReceived(draw.getValue(), false);
                         if (!chatIds.isEmpty()) {
                             subscriberService.initialNotifySubLoud(chatIds, draw);
